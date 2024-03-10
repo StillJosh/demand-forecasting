@@ -1,6 +1,6 @@
 ## Demand Forecasting
 
-This project tries to leverage LLMs for demand forecasting of SMEs. It consists of a NextApp (still some leftovers from the original App in the code), with a FastAPI backend that can predict future sales. 
+This project tries to leverage LLMs for demand forecasting of SMEs. It consists of a NextApp (still some leftovers from the original App in the code), with a FastAPI backend that can predict future sales. There is still lot's of work to do.
 
 ### Forecast Sales
 
