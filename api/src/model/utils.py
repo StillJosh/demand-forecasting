@@ -42,13 +42,23 @@ def get_forecast_from_completion(completion):
     return forecast
 
 
-def serialize_volume(volume, dec_sep=' '):
+def serialize_volume(volumes, dec_sep=' ', num_sep=','):
     """ Serializes a volume to a string. """
 
-    return dec_sep.join(str(volume))
+    # Convert the list of volumes to a string where the volumes are separated by num_sep
+    volumes = str(volumes).replace(' ', num_sep)
+
+    # Separate each digit by dec_sep
+    volumes = dec_sep.join(volumes)
+    return volumes
 
 
-def deserialize_volume(volumes, dec_sep=' '):
+def deserialize_volume(volumes, dec_sep=' ', num_sep=','):
     """ Deserializes a volume from a string. """
-    volumes = volumes.split(', ')
-    return np.array([float(''.join(volume.split(dec_sep))) for volume in volumes])
+    # Remove decimal separators and split the string into separate volumes
+    volumes = volumes.replace(dec_sep, '')
+    volumes = volumes.split(num_sep)
+
+    # Convert the volumes to floats
+    volumes = [float(''.join(volume.split(dec_sep))) for volume in volumes]
+    return np.array(volumes)
