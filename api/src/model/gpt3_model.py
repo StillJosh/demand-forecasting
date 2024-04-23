@@ -40,7 +40,7 @@ class GPT3Model:
         if self.scaler is not None:
             history = self.scaler.fit_transform(history.reshape(-1,1))
 
-        input_str = serialize_volume(history)
+        input_str = serialize_volume(history, dec_sep=' ')
 
         chatgpt_sys_message = (f"You predict sales volumes. The user will provide a sequence of historic sales "
                                f"volumes and you will predict the remaining sequence. The decimal values of the "

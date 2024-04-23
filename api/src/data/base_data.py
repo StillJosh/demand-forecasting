@@ -23,11 +23,13 @@ class BaseData:
         """
 
         self._data = data
-        self.skus = data['sku'].unique()
+        self.products = data['product'].unique()
+        self.product_ids = data['product_id'].unique()
+        self.customers = data['customer'].unique()
         self.customer_ids = data['customer_id'].unique()
         self.dec_sep = ' '
-        self.embeddings_2D = pd.DataFrame(columns=['customer_id', 'sku', 'embedding_1', 'embedding_2'])
-        self.embeddings = pd.DataFrame(columns=['customer_id', 'sku', 'embedding'])
+        self.embeddings_2D = pd.DataFrame(columns=['customer_id', 'product', 'embedding_1', 'embedding_2'])
+        self.embeddings = pd.DataFrame(columns=['customer_id', 'product', 'embedding'])
 
 
     @property
@@ -37,7 +39,9 @@ class BaseData:
     @data.setter
     def data(self, data):
         self._data = data
-        self.skus = data['sku'].unique()
+        self.products = data['product'].unique()
+        self.product_ids = data['product_ids'].unique()
+        self.customers = data['customer'].unique()
         self.customer_ids = data['customer_id'].unique()
 
     def get_data(self, product_ids=None, customer_ids=None):
@@ -57,26 +61,29 @@ class BaseData:
             The data for the given products and customers.
         """
 
+        # If only one product or customer id is requested, convert to list
         if isinstance(product_ids, int):
             product_ids = [product_ids]
         if isinstance(customer_ids, int):
             customer_ids = [customer_ids]
 
-        if self.data.sku.dtype == 'O' and product_ids is not None:
+        # Convert to string if dtype is object
+        # Todo: This is a workaround. Find a better solution
+        if self.data['product_id'].dtype == 'O' and product_ids is not None:
             product_ids = [str(x) for x in product_ids]
-        if self.data.customer_id.dtype == 'O' and customer_ids is not None:
+        if self.data['customer_id'].dtype == 'O' and customer_ids is not None:
             customer_ids = [str(x) for x in customer_ids]
 
         # Select data for the given products and customers
         data = self.data
 
-        groupby_columns = ['month']
-        return_columns = ['month', 'units_sold']
+        groupby_columns = ['week']
+        return_columns = ['week', 'units_sold']
 
         if product_ids is not None:
-            data = data[self.data['sku'].isin(product_ids)]
-            groupby_columns.append('sku')
-            return_columns.append('sku')
+            data = data[self.data['product_id'].isin(product_ids)]
+            groupby_columns.append('product_id')
+            return_columns.append('product_id')
         if customer_ids is not None:
             data = data[data['customer_id'].isin(customer_ids)]
             groupby_columns.append('customer_id')
@@ -101,12 +108,12 @@ class BaseData:
         # Create dataframe
         embeddings = pd.DataFrame(embeddings, columns=['embedding_1', 'embedding_2'])
         embeddings['customer_id'] = customer_ids
-        embeddings['sku'] = product_ids
+        embeddings['product_id'] = product_ids
 
         # Add to dataframe
         self.embeddings_2D = self.embeddings_2D.append(embeddings)
 
-    def plot_products(self, product_id=0, customer_id=0, ax=None):
+    def plot_products(self, product_id=None, customer_id=None, ax=None):
 
         """
         Plots the sales of a product as a line plot.
@@ -128,9 +135,9 @@ class BaseData:
 
         data = self.get_data(product_ids=product_id, customer_ids=customer_id)
 
-        ax.plot(data['month'], data['units_sold'])
+        ax.plot(data['week'], data['units_sold'])
 
-    def plot_forecast(self, product_id, customer_id, forecast, start_date=None, show_from=0, ax=None):
+    def plot_forecast(self, forecast, product_id=None, customer_id=None, start_date=None, show_from=0, ax=None):
         """
 
         Plots the sales of a product and its forecast as a line plot.
@@ -193,7 +200,7 @@ class BaseData:
             The serialized data.
         """
 
-        data = self.data[self.data['sku'] == product_id]
+        data = self.data[self.data['product_id'] == product_id]
         data = data[data['customer_id'] == customer_id]
         data = data['units_sold'].values[from_point:to_point]
         data = [serialize_volume(x, self.dec_sep) for x in data]
